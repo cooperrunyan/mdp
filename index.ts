@@ -15,16 +15,43 @@ const md = it({
 
 const file = await Bun.file(Bun.argv[2]).text();
 
-const template = await Bun.file(`${import.meta.dir}/template.html`).text();
-const gfm = await Bun.file(`${import.meta.dir}/gfm.css`).text();
+// @ts-ignore
+import _css from './gfm.css';
+const css = (await Bun.file(_css).text())
+  .replaceAll(/\s+/g, ' ')
+  .replaceAll(/\/\*.*?\*\//g, '');
 
-const res = md
+const rendered = md
   .render(file)
   .replaceAll('.md"', '.html"')
   .replaceAll('.md#', '.html#');
 
-const html = template
-  .replace('{{CONTENT}}', res)
-  .replace('{{GFM_STYLE}}', `<style>${gfm}</style>`);
+//     <link
+//       rel="stylesheet"
+//       href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css" />
+//
+//     <link
+//       rel="stylesheet"
+//       href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css" />
+//     <link
+//       rel="stylesheet"
+//       href="https://cdn.jsdelivr.net/github-markdown-css/2.2.1/github-markdown.css" />
+
+const html = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.5.1/katex.min.css" />
+    <style>${css}</style>
+  </head>
+  <body class="vscode-light vscode-body">
+    <div class="markdown-body">
+      <div class="markdown-content">
+        ${rendered}
+      </div>
+    </div>
+  </body>
+</html>
+`;
 
 await Bun.write(Bun.file(Bun.argv[3]), html);
