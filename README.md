@@ -16,3 +16,7 @@ bun run ./index.ts INPUT.md OUTPUT.html
 bun build --compile ./index.ts --outfile mdp
 ./mdp INPUT.md OUTPUT.html
 ```
+
+---
+
+![Example](examples/README.png)
